@@ -133,8 +133,10 @@ int DawnDusk::calculateDawnAndDuskTimes (ModbusRegisters *mb, struct tm *timeInf
     longitude = mb->getHR(MB_CONTROLLER_LONGITUDE);
     latitude  = mb->getHR(MB_CONTROLLER_LATITUDE);
 
+#if 0
     longitude = -80;
     latitude  = 37;
+#endif
 
 #if 0
     // 1. Calculate the day of the year
@@ -152,6 +154,7 @@ int DawnDusk::calculateDawnAndDuskTimes (ModbusRegisters *mb, struct tm *timeInf
     lngHour = longitude / 15.;
 
     cout << "yday, utcOffset, lngHour " << yday << " " << utcOffset << " " << lngHour <<endl;
+    cout << "longitude, latitude =  " << longitude << ", " << latitude << endl;
 
     duskTime = calculateSunEventTime (yday, lngHour, (float) latitude, utcOffset, DUSK);
     dawnTime = calculateSunEventTime (yday, lngHour, (float) latitude, utcOffset, DAWN);

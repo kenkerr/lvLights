@@ -252,35 +252,29 @@ int processWrite (ModbusTransaction *req, char *resp, ModbusRegisters *mb, Relay
     }
 
                                     
-    // Register 5, 6: Controller Longitude
+    // Register 5: Controller Longitude
     if (hrChanged[5]) {
-        if (hrChanged[6]) {
-        
-            mb->setHR (MB_CONTROLLER_LONGITUDE,   reqRegs[6]);
-            mb->setHR (MB_CONTROLLER_LONGITUDE+1, reqRegs[5]);
+        mb->setHR (MB_CONTROLLER_LONGITUDE,   reqRegs[5]);
+        dd->setCalcReqd();
 
-        } else {
-            resp[7] = req->getFC() | 0x80;
-            resp[8] = MB_ILLEGAL_DATA_VALUE;
-            return 9;
-        }
+    } else {
+        resp[7] = req->getFC() | 0x80;
+        resp[8] = MB_ILLEGAL_DATA_VALUE;
+        return 9;
     }
 
                             
-    // Register 7, 8: Controller Latitude
+    // Register 7: Controller Latitude
     if (hrChanged[7]) {
-        if (hrChanged[8]) {
-        
-            mb->setHR (MB_CONTROLLER_LATITUDE,   reqRegs[8]);
-            mb->setHR (MB_CONTROLLER_LATITUDE+1, reqRegs[7]);
+        mb->setHR (MB_CONTROLLER_LATITUDE,   reqRegs[7]);
+        dd->setCalcReqd();
 
-        } else {
-            resp[7] = req->getFC() | 0x80;
-            resp[8] = MB_ILLEGAL_DATA_VALUE;
-            return 9;
-        }
+    } else {
+        resp[7] = req->getFC() | 0x80;
+        resp[8] = MB_ILLEGAL_DATA_VALUE;
+        return 9;
     }
-
+ 
     // Register 9, 10: Current time
     if (hrChanged[9]) {
         if (hrChanged[10]) {
@@ -400,14 +394,14 @@ int getLightChangeAction (int minutesSinceMidnight, ModbusRegisters *mb, DawnDus
             turnOffTime = dd->getDawnTime();
             mb->setHR (MB_TURN_OFF_TIME, turnOffTime);
 
-            if (minutesSinceMidnight > turnOnTime ||
-                minutesSinceMidnight < turnOffTime) {
+            if (minutesSinceMidnight > turnOffTime ||
+                minutesSinceMidnight < turnOnTime) {
 
-                desiredState = CURRENT_STATE_ON;
+                desiredState = CURRENT_STATE_OFF;
 
             } else {
 
-                desiredState = CURRENT_STATE_OFF;
+                desiredState = CURRENT_STATE_ON;
             }
             break;
 
@@ -487,6 +481,7 @@ int main ()
         if (timeInfo.tm_mday != oldDay) {
             cout << "LVLightController> calculating dawn & dusk, gmtoff = " << gmtoff << endl;
             status = dd.calculateDawnAndDuskTimes (&mb, &timeInfo, gmtoff);
+            dd.clrCalcReqd();
         }
 
         oldDay = timeInfo.tm_mday;
@@ -534,6 +529,12 @@ int main ()
 
             processingTransaction = FALSE;                              // wait for next xaction
         }                                                               // while processing xaction
+
+        // Re-calculate dawn & dusk times if necessary
+        if (dd.getCalcReqd() == TRUE) {
+            status = dd.calculateDawnAndDuskTimes (&mb, &timeInfo, gmtoff);
+            dd.clrCalcReqd();
+        }
 
         // Normal, non-transaction processing (e.g., is it time to turn on or off?)
         requiredAction = getLightChangeAction (minutesSinceMidnight, &mb, &dd);

@@ -18,6 +18,20 @@ public:
         return dawnMinutesAfterMidnight;
     };
 
+    int setCalcReqd (){
+        calcReqd = TRUE;
+        return 0;
+    };
+
+    int clrCalcReqd (){
+        calcReqd = FALSE;
+        return 0;
+    };
+
+    int getCalcReqd (){
+       return  calcReqd;
+    };
+
     int calculateDawnAndDuskTimes (ModbusRegisters *mb, struct tm *timeInfo, int gmtoff);
 
 
@@ -26,5 +40,7 @@ private:
 
     int  duskMinutesAfterMidnight;
     int  dawnMinutesAfterMidnight;
+
+    int  calcReqd;
 };
 #endif
