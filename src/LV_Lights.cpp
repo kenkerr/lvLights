@@ -394,7 +394,7 @@ int getLightChangeAction (int minutesSinceMidnight, ModbusRegisters *mb, DawnDus
             turnOffTime = dd->getDawnTime();
             mb->setHR (MB_TURN_OFF_TIME, turnOffTime);
 
-            if (minutesSinceMidnight > turnOffTime ||
+            if (minutesSinceMidnight > turnOffTime && 
                 minutesSinceMidnight < turnOnTime) {
 
                 desiredState = CURRENT_STATE_OFF;
